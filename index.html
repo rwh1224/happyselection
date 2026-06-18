@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>행복의 선택! 1만원 프로젝트</title>
+    <style>
+        :root {
+            --bg-color: #fdfaf2;
+            --border-color: #d7ccc8;
+            --header-bg: #8d6e63;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            background-color: var(--bg-color);
+            color: #4e342e;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 2px solid var(--border-color);
+        }
+
+        h1 {
+            text-align: center;
+            color: #d32f2f;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #6a1b9a;
+            margin-bottom: 25px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            background-color: #fff;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 15px 10px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* 헤더 스타일 */
+        thead th {
+            background-color: #f5f5f5;
+            color: #333;
+            font-size: 16px;
+        }
+        thead th.cost-1 { background-color: #ffebee; color: #c62828; }
+        thead th.cost-2 { background-color: #e8f5e9; color: #2e7d32; }
+        thead th.cost-3 { background-color: #e8eaf6; color: #283593; }
+        thead th.cost-5 { background-color: #fffde7; color: #f57f17; }
+
+        /* 첫 번째 열 (카테고리) */
+        tbody td:first-child {
+            background-color: #fafafa;
+            font-size: 16px;
+            width: 15%;
+        }
+
+        /* 선택 가능한 셀 스타일 */
+        .selectable {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .selectable:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* 선택되었을 때의 스타일 */
+        .selectable.selected {
+            background-color: #ffe082 !important;
+            box-shadow: inset 0 0 0 3px #ffb300;
+        }
+
+        /* 하단 결과창 */
+        .result-panel {
+            background-color: #fff8e1;
+            border: 2px dashed #ffa000;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .total-amount {
+            color: #d32f2f;
+            font-size: 28px;
+        }
+
+        .limit-info {
+            font-size: 14px;
+            color: #757575;
+            margin-top: 5px;
+            font-weight: normal;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>행복의 선택!</h1>
+    <div class="subtitle">1만원 한도로 하나씩 골라주세요!</div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>구분</th>
+                <th class="cost-1" data-cost="1000">1천원</th>
+                <th class="cost-2" data-cost="2000">2천원</th>
+                <th class="cost-3" data-cost="3000">3천원</th>
+                <th class="cost-5" data-cost="5000">5천원</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr data-category="work">
+                <td>근무시간</td>
+                <td class="selectable" data-cost="1000">주6일 (6시 퇴근)</td>
+                <td class="selectable" data-cost="2000">주5일 + 야간근무</td>
+                <td class="selectable" data-cost="3000">주5일</td>
+                <td class="selectable" data-cost="5000">주3일 (휴양)</td>
+            </tr>
+            <tr data-category="lotto">
+                <td>로또/주식</td>
+                <td class="selectable" data-cost="1000">80% 자산 투자한<br>주식 상장폐지</td>
+                <td class="selectable" data-cost="2000">매주 10만원씩 투자<br>평생 당첨 안됨</td>
+                <td class="selectable" data-cost="3000">로또 구매 안 함</td>
+                <td class="selectable" data-cost="5000">로또 1등 1번 당첨</td>
+            </tr>
+            <tr data-category="health">
+                <td>건강</td>
+                <td class="selectable" data-cost="1000">단명</td>
+                <td class="selectable" data-cost="2000">유병장수</td>
+                <td class="selectable" data-cost="3000">잔병치레</td>
+                <td class="selectable" data-cost="5000">무결점 건강</td>
+            </tr>
+            <tr data-category="partner">
+                <td>배우자/파트너</td>
+                <td class="selectable" data-cost="1000">사물로 보임</td>
+                <td class="selectable" data-cost="2000">동물로 보임</td>
+                <td class="selectable" data-cost="3000">사람으로 보임</td>
+                <td class="selectable" data-cost="5000">갈등 없음 또는 독신</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="result-panel">
+        현재 선택한 합계: <span class="total-amount" id="totalPrice">0</span>원
+        <div class="limit-info">(최대 10,000원까지만 선택 가능합니다.)</div>
+    </div>
+</div>
+
+<script>
+    const selectables = document.querySelectorAll('.selectable');
+    const totalPriceElement = document.getElementById('totalPrice');
+    const MAX_BUDGET = 10000;
+
+    selectables.forEach(cell => {
+        cell.addEventListener('click', function() {
+            const row = this.parentElement;
+            const cost = parseInt(this.getAttribute('data-cost'));
+            
+            // 이미 선택된 셀을 다시 누른 경우 -> 선택 해제
+            if (this.classList.contains('selected')) {
+                this.classList.remove('selected');
+                updateTotal();
+                return;
+            }
+
+            // 현재 행에서 기존에 선택되어 있던 셀을 찾음
+            const currentSelectedInRow = row.querySelector('.selected');
+            let previousCost = 0;
+            if (currentSelectedInRow) {
+                previousCost = parseInt(currentSelectedInRow.getAttribute('data-cost'));
+            }
+
+            // 가상으로 계산해보기 (기존 선택 빼고, 새 선택 더하기)
+            const currentTotal = calculateCurrentTotal();
+            const expectedTotal = currentTotal - previousCost + cost;
+
+            // 10,000원 초과 여부 검증
+            if (expectedTotal > MAX_BUDGET) {
+                alert(`10,000원을 초과할 수 없습니다!\n(현재 예상 금액: ${expectedTotal.toLocaleString()}원)`);
+                return; // 함수 종료 (선택되지 않음)
+            }
+
+            // 검증을 통과했다면 같은 행의 기존 선택을 지우고 현재 셀 선택
+            if (currentSelectedInRow) {
+                currentSelectedInRow.classList.remove('selected');
+            }
+            this.classList.add('selected');
+
+            // 합계 업데이트
+            updateTotal();
+        });
+    });
+
+    // 현재 선택된 셀들의 총 금액을 단순히 계산하는 함수
+    function calculateCurrentTotal() {
+        let total = 0;
+        const selectedCells = document.querySelectorAll('.selectable.selected');
+        selectedCells.forEach(cell => {
+            total += parseInt(cell.getAttribute('data-cost'));
+        });
+        return total;
+    }
+
+    // 화면에 합계를 업데이트하는 함수
+    function updateTotal() {
+        const total = calculateCurrentTotal();
+        totalPriceElement.textContent = total.toLocaleString();
+    }
+</script>
+
+</body>
+</html>
