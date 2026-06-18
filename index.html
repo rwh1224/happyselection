@@ -106,6 +106,7 @@
             text-align: center;
             font-size: 22px;
             font-weight: bold;
+            margin-bottom: 25px;
         }
 
         .total-amount {
@@ -118,6 +119,68 @@
             color: #757575;
             margin-top: 5px;
             font-weight: normal;
+        }
+
+        /* 입력 폼 및 제출 버튼 스타일 */
+        .submit-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .input-group label {
+            font-size: 16px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: #ffa000;
+        }
+
+        .btn-submit {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .btn-submit:hover {
+            background-color: #45a049;
+        }
+
+        .btn-submit:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -138,28 +201,28 @@
             </tr>
         </thead>
         <tbody>
-            <tr data-category="work">
+            <tr data-category="근무시간">
                 <td>근무시간</td>
                 <td class="selectable" data-cost="1000">주6일 (6시 퇴근)</td>
                 <td class="selectable" data-cost="2000">주5일 + 야간근무</td>
                 <td class="selectable" data-cost="3000">주5일</td>
                 <td class="selectable" data-cost="5000">주3일 (휴양)</td>
             </tr>
-            <tr data-category="lotto">
+            <tr data-category="로또/주식">
                 <td>로또/주식</td>
                 <td class="selectable" data-cost="1000">80% 자산 투자한<br>주식 상장폐지</td>
                 <td class="selectable" data-cost="2000">매주 10만원씩 투자<br>평생 당첨 안됨</td>
                 <td class="selectable" data-cost="3000">로또 구매 안 함</td>
                 <td class="selectable" data-cost="5000">로또 1등 1번 당첨</td>
             </tr>
-            <tr data-category="health">
+            <tr data-category="건강">
                 <td>건강</td>
                 <td class="selectable" data-cost="1000">단명</td>
                 <td class="selectable" data-cost="2000">유병장수</td>
                 <td class="selectable" data-cost="3000">잔병치레</td>
                 <td class="selectable" data-cost="5000">무결점 건강</td>
             </tr>
-            <tr data-category="partner">
+            <tr data-category="배우자/파트너">
                 <td>배우자/파트너</td>
                 <td class="selectable" data-cost="1000">사물로 보임</td>
                 <td class="selectable" data-cost="2000">동물로 보임</td>
@@ -173,11 +236,25 @@
         현재 선택한 합계: <span class="total-amount" id="totalPrice">0</span>원
         <div class="limit-info">(최대 10,000원까지만 선택 가능합니다.)</div>
     </div>
+
+    <!-- 성함 및 제출 섹션 추가 -->
+    <div class="submit-section">
+        <div class="input-group">
+            <label for="userName">성함</label>
+            <input type="text" id="userName" placeholder="이름을 입력해주세요" required>
+        </div>
+        <button type="button" class="btn-submit" id="submitBtn">제출하기</button>
+    </div>
 </div>
 
 <script>
+    // ⚠️ 구글 앱스 크립트(Web App) 배포 후 생성된 URL을 여기에 붙여넣으세요!
+    const GOOGLE_APP_SCRIPT_URL = 'YOUR_GOOGLE_APP_SCRIPT_URL_HERE';
+
     const selectables = document.querySelectorAll('.selectable');
     const totalPriceElement = document.getElementById('totalPrice');
+    const submitBtn = document.getElementById('submitBtn');
+    const userNameInput = document.getElementById('userName');
     const MAX_BUDGET = 10000;
 
     selectables.forEach(cell => {
@@ -185,42 +262,35 @@
             const row = this.parentElement;
             const cost = parseInt(this.getAttribute('data-cost'));
             
-            // 이미 선택된 셀을 다시 누른 경우 -> 선택 해제
             if (this.classList.contains('selected')) {
                 this.classList.remove('selected');
                 updateTotal();
                 return;
             }
 
-            // 현재 행에서 기존에 선택되어 있던 셀을 찾음
             const currentSelectedInRow = row.querySelector('.selected');
             let previousCost = 0;
             if (currentSelectedInRow) {
                 previousCost = parseInt(currentSelectedInRow.getAttribute('data-cost'));
             }
 
-            // 가상으로 계산해보기 (기존 선택 빼고, 새 선택 더하기)
             const currentTotal = calculateCurrentTotal();
             const expectedTotal = currentTotal - previousCost + cost;
 
-            // 10,000원 초과 여부 검증
             if (expectedTotal > MAX_BUDGET) {
                 alert(`10,000원을 초과할 수 없습니다!\n(현재 예상 금액: ${expectedTotal.toLocaleString()}원)`);
-                return; // 함수 종료 (선택되지 않음)
+                return;
             }
 
-            // 검증을 통과했다면 같은 행의 기존 선택을 지우고 현재 셀 선택
             if (currentSelectedInRow) {
                 currentSelectedInRow.classList.remove('selected');
             }
             this.classList.add('selected');
 
-            // 합계 업데이트
             updateTotal();
         });
     });
 
-    // 현재 선택된 셀들의 총 금액을 단순히 계산하는 함수
     function calculateCurrentTotal() {
         let total = 0;
         const selectedCells = document.querySelectorAll('.selectable.selected');
@@ -230,11 +300,85 @@
         return total;
     }
 
-    // 화면에 합계를 업데이트하는 함수
     function updateTotal() {
         const total = calculateCurrentTotal();
         totalPriceElement.textContent = total.toLocaleString();
     }
+
+    // 제출하기 버튼 클릭 이벤트
+    submitBtn.addEventListener('click', async function() {
+        const name = userNameInput.value.trim();
+        
+        // 이름 검증
+        if (!name) {
+            alert('성함을 입력해주세요!');
+            userNameInput.focus();
+            return;
+        }
+
+        // 선택 데이터 추출
+        const selectedCells = document.querySelectorAll('.selectable.selected');
+        const totalAmount = calculateCurrentTotal();
+
+        // 각 카테고리별로 선택된 값 수집 (없으면 '선택 안함')
+        const choices = {
+            '근무시간': '선택 안함',
+            '로또/주식': '선택 안함',
+            '건강': '선택 안함',
+            '배우자/파트너': '선택 안함'
+        };
+
+        selectedCells.forEach(cell => {
+            const category = cell.parentElement.getAttribute('data-category');
+            // '주6일 (6시 퇴근) (1,000원)' 형태로 저장하도록 가공
+            choices[category] = `${cell.innerText.replace(/\n/g, ' ')} (${parseInt(cell.getAttribute('data-cost')).toLocaleString()}원)`;
+        });
+
+        // 전송할 데이터 포맷
+        const payload = {
+            name: name,
+            work: choices['근무시간'],
+            lotto: choices['로또/주식'],
+            health: choices['건강'],
+            partner: choices['배우자/파트너'],
+            total: totalAmount
+        };
+
+        // 초기 연동 전 URL 확인
+        if (GOOGLE_APP_SCRIPT_URL === 'YOUR_GOOGLE_APP_SCRIPT_URL_HERE') {
+            alert(`[연동 테스트 안내]\n구글 스프레드시트 주소가 아직 설정되지 않았습니다.\n\n입력된 데이터 샘플:\n이름: ${payload.name}\n총액: ${payload.total}원\n근무: ${payload.work}\n로또: ${payload.lotto}`);
+            return;
+        }
+
+        // 버튼 비활성화 (중복 제출 방지)
+        submitBtn.disabled = true;
+        submitBtn.innerText = '제출 중...';
+
+        try {
+            // 구글 앱스 크립트로 POST 요청 전송
+            const response = await fetch(GOOGLE_APP_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors', // CORS 정책 우회를 위해 no-cors 설정
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            alert('성공적으로 제출되었습니다!');
+            // 폼 초기화
+            userNameInput.value = '';
+            document.querySelectorAll('.selectable.selected').forEach(cell => cell.classList.remove('selected'));
+            updateTotal();
+
+        } catch (error) {
+            console.error('Error:', error);
+            alert('제출 중 오류가 발생했습니다. 다시 시도해 주세요.');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerText = '제출하기';
+        }
+    });
 </script>
 
 </body>
