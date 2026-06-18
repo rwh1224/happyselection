@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>나와 가장 닮은 사람 찾기</title>
+    <style>
+        :root {
+            --bg-color: #fdfaf2;
+            --border-color: #d7ccc8;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            background-color: var(--bg-color);
+            color: #4e342e;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 2px solid var(--border-color);
+            text-align: center;
+        }
+
+        h1 {
+            color: #6a1b9a;
+            font-size: 26px;
+            margin-bottom: 10px;
+        }
+
+        .desc {
+            font-size: 15px;
+            color: #757575;
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto 20px auto;
+        }
+
+        label {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #9c27b0;
+        }
+
+        .btn-match {
+            background-color: #9c27b0;
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .btn-match:hover {
+            background-color: #7b1fa2;
+        }
+
+        .btn-match:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        /* 결과 창 스타일 */
+        .result-box {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f3e5f5;
+            border: 2px dashed #9c27b0;
+            border-radius: 10px;
+            text-align: left;
+            display: none;
+        }
+
+        .result-box h3 {
+            margin-top: 0;
+            color: #4a148c;
+            text-align: center;
+            font-size: 20px;
+            border-bottom: 1px solid #e1bee7;
+            padding-bottom: 10px;
+        }
+
+        .match-item {
+            margin: 8px 0;
+            font-size: 15px;
+        }
+
+        .match-highlight {
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        .btn-back {
+            margin-top: 20px;
+            background: none;
+            border: none;
+            color: #757575;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🔮 내 소울메이트 찾기</h1>
+    <div class="desc">구글 스프레드시트의 데이터를 분석하여<br>나와 가장 선택이 유사한 사람을 찾아옵니다.</div>
+
+    <div class="input-group">
+        <label for="searchName">내 이름 입력</label>
+        <input type="text" id="searchName" placeholder="방금 제출한 이름을 입력하세요" required>
+    </div>
+
+    <button type="button" class="btn-match" id="matchBtn">닮은 사람 찾기</button>
+
+    <div class="result-box" id="resultBox">
+        <h3>💡 분석 결과</h3>
+        <p id="resultSummary" style="font-size: 16px; font-weight: bold; text-align: center;"></p>
+        <div id="matchDetails"></div>
+    </div>
+
+    <button class="btn-back" onclick="location.href='index.html'">← 처음으로 돌아가기</button>
+</div>
+
+<script>
+    // ⚠️ 구글 앱스 크립트 웹 앱 URL을 여기에 붙여넣으세요!
+    const GOOGLE_APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxsmWJo-K2MtElaHvvv0VzeinIjcDq_QD_KGB-Zox4-i_E55-zOOMuGS6qke5NZ-jNI/exec';
+
+    const matchBtn = document.getElementById('matchBtn');
+    const searchNameInput = document.getElementById('searchName');
+    const resultBox = document.getElementById('resultBox');
+    const resultSummary = document.getElementById('resultSummary');
+    const matchDetails = document.getElementById('matchDetails');
+
+    matchBtn.addEventListener('click', async function() {
+        const myName = searchNameInput.value.trim();
+
+        if (!myName) {
+            alert('이름을 입력해주세요!');
+            searchNameInput.focus();
+            return;
+        }
+
+        if (GOOGLE_APP_SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbxsmWJo-K2MtElaHvvv0VzeinIjcDq_QD_KGB-Zox4-i_E55-zOOMuGS6qke5NZ-jNI/exec') {
+            alert('구글 앱스 스크립트 URL이 설정되지 않았습니다.');
+            return;
+        }
+
+        matchBtn.disabled = true;
+        matchBtn.innerText = '스프레드시트 분석 중...';
+        resultBox.style.display = 'none';
+
+        try {
+            // 1. 구글 시트 데이터 가져오기 (GET 요청)
+            const response = await fetch(GOOGLE_APP_SCRIPT_URL);
+            const resData = await response.json();
+
+            if (resData.result !== 'success') {
+                alert('데이터를 가져오는데 실패했습니다.');
+                return;
+            }
+
+            const allUsers = resData.data;
+
+            // 2. 내 데이터 찾기 (가장 최근에 입력된 내 이름 검색)
+            const myData = allUsers.slice().reverse().find(user => user.name === myName);
+
+            if (!myData) {
+                alert(`'${myName}' 이름으로 제출된 기록을 찾을 수 없습니다.\n먼저 첫 페이지에서 선택을 완료하고 제출해 주세요!`);
+                return;
+            }
+
+            // 3. 나와 가장 닮은 사람 계산 알고리즘
+            let bestMatchUser = null;
+            let maxScore = -1;
+            let bestMatchDetails = [];
+
+            allUsers.forEach(otherUser => {
+                // 자기 자신은 제외
+                if (otherUser.timestamp === myData.timestamp && otherUser.name === myData.name) return;
+
+                let currentScore = 0;
+                let matches = [];
+
+                // 4개 항목 비교하여 일치하면 점수 1점씩 추가
+                if (otherUser.work === myData.work) { currentScore++; matches.push(`근무시간 (${myData.work})`); }
+                if (otherUser.lotto === myData.lotto) { currentScore++; matches.push(`로또/주식 (${myData.lotto})`); }
+                if (otherUser.health === myData.health) { currentScore++; matches.push(`건강 (${myData.health})`); }
+                if (otherUser.partner === myData.partner) { currentScore++; matches.push(`배우자/파트너 (${myData.partner})`); }
+
+                // 가장 점수가 높은 사람을 갱신
+                if (currentScore > maxScore) {
+                    maxScore = currentScore;
+                    bestMatchUser = otherUser;
+                    bestMatchDetails = matches;
+                }
+            });
+
+            // 4. 결과 화면에 표시
+            resultBox.style.display = 'block';
+            if (bestMatchUser && maxScore > 0) {
+                resultSummary.innerHTML = `🎉 <span style="color:#4a148c;">${myData.name}</span>님과 가장 닮은 사람은 <span style="color:#d32f2f;">[ ${bestMatchUser.name} ]</span>님입니다!`;
+                
+                let html = `<p style="text-align:center; font-size:14px; color:#666;">네 가지 가치관 중 <b>${maxScore}개</b>의 선택이 완벽히 일치합니다.</p><br>`;
+                html += `<b>🤝 일치하는 점수 목록:</b><br>`;
+                bestMatchDetails.forEach(item => {
+                    html += `<div class="match-item">✅ <span class="match-highlight">${item}</span> 항목이 서로 일치합니다.</div>`;
+                });
+                
+                matchDetails.innerHTML = html;
+            } else {
+                resultSummary.innerHTML = `🤔 아쉽게도 아직 닮은 사람을 찾지 못했습니다.`;
+                matchDetails.innerHTML = `<p style="text-align:center; color:#666;">스프레드시트에 다른 사람의 데이터가 아직 없거나,<br>선택지가 겹치는 사람이 한 명도 없습니다. 더 많은 사람이 참여하면 결과가 나타납니다!</p>`;
+            }
+
+        } catch (error) {
+            console.error('Error:', error);
+            alert('분석 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+        } finally {
+            matchBtn.disabled = false;
+            matchBtn.innerText = '닮은 사람 찾기';
+        }
+    });
+</script>
+</body>
+</html>
