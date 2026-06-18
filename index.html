@@ -177,7 +177,6 @@
             cursor: not-allowed;
         }
 
-        /* 새로 추가된 닮은 사람 찾기 버튼 스타일 */
         .navigation-section {
             display: flex;
             justify-content: center;
@@ -195,7 +194,7 @@
             cursor: pointer;
             transition: background 0.2s;
             width: 100%;
-            max-width: 422px; /* 이름 입력칸 패딩 규격과 맞춤 */
+            max-width: 422px;
             box-sizing: border-box;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
@@ -272,7 +271,8 @@
 </div>
 
 <script>
-    const GOOGLE_APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxsmWJo-K2MtElaHvvv0VzeinIjcDq_QD_KGB-Zox4-i_E55-zOOMuGS6qke5NZ-jNI/exec';
+    // ✅ 실제 사용할 URL (match.html과 동일하게 통일)
+    const GOOGLE_APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzkZlOdXdX2-ckhaxhCz-9Ji0OJZ0rJ8rjkdb6ryTIWLTJdQabcKgFD27ENADzNNGQp/exec';
 
     const selectables = document.querySelectorAll('.selectable');
     const totalPriceElement = document.getElementById('totalPrice');
@@ -348,7 +348,7 @@
 
         selectedCells.forEach(cell => {
             const category = cell.parentElement.getAttribute('data-category');
-            choices[category] = cell.innerText.replace(/\n/g, ' '); 
+            choices[category] = cell.innerText.replace(/\n/g, ' ');
         });
 
         const payload = {
@@ -359,16 +359,12 @@
             partner: choices['배우자/파트너']
         };
 
-        if (GOOGLE_APP_SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbxsmWJo-K2MtElaHvvv0VzeinIjcDq_QD_KGB-Zox4-i_E55-zOOMuGS6qke5NZ-jNI/exec') {
-            alert(`[안내] 웹 앱 URL 주소가 연동되지 않았습니다.\n\n전송될 데이터 샘플:\n이름: ${payload.name}\n근무: ${payload.work}\n로또: ${payload.lotto}\n건강: ${payload.health}\n파트너: ${payload.partner}`);
-            return;
-        }
-
         submitBtn.disabled = true;
         submitBtn.innerText = '제출 중...';
 
         try {
-            await fetch(https://script.google.com/macros/s/AKfycbxsmWJo-K2MtElaHvvv0VzeinIjcDq_QD_KGB-Zox4-i_E55-zOOMuGS6qke5NZ-jNI/exec, {
+            // ✅ 변수를 올바르게 사용
+            await fetch(GOOGLE_APP_SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
                 headers: { 'Content-Type': 'application/json' },
