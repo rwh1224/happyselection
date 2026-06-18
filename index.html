@@ -124,6 +124,7 @@
             padding: 20px;
             border-radius: 10px;
             border: 1px solid var(--border-color);
+            margin-bottom: 20px;
         }
 
         .input-group {
@@ -174,6 +175,33 @@
         .btn-submit:disabled {
             background-color: #bdc3c7;
             cursor: not-allowed;
+        }
+
+        /* 새로 추가된 닮은 사람 찾기 버튼 스타일 */
+        .navigation-section {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .btn-match-page {
+            background-color: #9c27b0;
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+            max-width: 422px; /* 이름 입력칸 패딩 규격과 맞춤 */
+            box-sizing: border-box;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .btn-match-page:hover {
+            background-color: #7b1fa2;
         }
     </style>
 </head>
@@ -237,10 +265,13 @@
         </div>
         <button type="button" class="btn-submit" id="submitBtn">제출하기</button>
     </div>
+
+    <div class="navigation-section">
+        <button type="button" class="btn-match-page" onclick="location.href='match.html'">🔮 가장 닮은 사람 찾으러 가기</button>
+    </div>
 </div>
 
 <script>
-    // ⚠️여기에 본인의 구글 웹 앱 URL 주소를 넣어주세요!
     const GOOGLE_APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzkZlOdXdX2-ckhaxhCz-9Ji0OJZ0rJ8rjkdb6ryTIWLTJdQabcKgFD27ENADzNNGQp/exec';
 
     const selectables = document.querySelectorAll('.selectable');
@@ -297,7 +328,6 @@
         totalPriceElement.textContent = total.toLocaleString();
     }
 
-    // 제출하기 버튼 로직
     submitBtn.addEventListener('click', async function() {
         const name = userNameInput.value.trim();
         
@@ -309,7 +339,6 @@
 
         const selectedCells = document.querySelectorAll('.selectable.selected');
         
-        // 시트 구조에 맞춤 (데이터가 선택 안되었으면 '선택 안함')
         const choices = {
             '근무시간': '선택 안함',
             '로또/주식': '선택 안함',
@@ -330,7 +359,7 @@
             partner: choices['배우자/파트너']
         };
 
-        if (GOOGLE_APP_SCRIPT_URL === 'YOUR_GOOGLE_APP_SCRIPT_URL_HERE') {
+        if (GOOGLE_APP_SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbxsmWJo-K2MtElaHvvv0VzeinIjcDq_QD_KGB-Zox4-i_E55-zOOMuGS6qke5NZ-jNI/exec') {
             alert(`[안내] 웹 앱 URL 주소가 연동되지 않았습니다.\n\n전송될 데이터 샘플:\n이름: ${payload.name}\n근무: ${payload.work}\n로또: ${payload.lotto}\n건강: ${payload.health}\n파트너: ${payload.partner}`);
             return;
         }
