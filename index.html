@@ -8,7 +8,6 @@
         :root {
             --bg-color: #fdfaf2;
             --border-color: #d7ccc8;
-            --header-bg: #8d6e63;
         }
 
         body {
@@ -62,7 +61,6 @@
             font-weight: bold;
         }
 
-        /* 헤더 스타일 */
         thead th {
             background-color: #f5f5f5;
             color: #333;
@@ -73,14 +71,12 @@
         thead th.cost-3 { background-color: #e8eaf6; color: #283593; }
         thead th.cost-5 { background-color: #fffde7; color: #f57f17; }
 
-        /* 첫 번째 열 (카테고리) */
         tbody td:first-child {
             background-color: #fafafa;
             font-size: 16px;
             width: 15%;
         }
 
-        /* 선택 가능한 셀 스타일 */
         .selectable {
             cursor: pointer;
             transition: all 0.2s ease;
@@ -91,13 +87,11 @@
             background-color: #f5f5f5;
         }
 
-        /* 선택되었을 때의 스타일 */
         .selectable.selected {
             background-color: #ffe082 !important;
             box-shadow: inset 0 0 0 3px #ffb300;
         }
 
-        /* 하단 결과창 */
         .result-panel {
             background-color: #fff8e1;
             border: 2px dashed #ffa000;
@@ -121,7 +115,6 @@
             font-weight: normal;
         }
 
-        /* 입력 폼 및 제출 버튼 스타일 */
         .submit-section {
             display: flex;
             flex-direction: column;
@@ -237,7 +230,6 @@
         <div class="limit-info">(최대 10,000원까지만 선택 가능합니다.)</div>
     </div>
 
-    <!-- 성함 및 제출 섹션 추가 -->
     <div class="submit-section">
         <div class="input-group">
             <label for="userName">성함</label>
@@ -248,8 +240,8 @@
 </div>
 
 <script>
-    // ⚠️ 구글 앱스 크립트(Web App) 배포 후 생성된 URL을 여기에 붙여넣으세요!
-    const GOOGLE_APP_SCRIPT_URL = 'YOUR_GOOGLE_APP_SCRIPT_URL_HERE';
+    // ⚠️여기에 본인의 구글 웹 앱 URL 주소를 넣어주세요!
+    const GOOGLE_APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzkZlOdXdX2-ckhaxhCz-9Ji0OJZ0rJ8rjkdb6ryTIWLTJdQabcKgFD27ENADzNNGQp/exec';
 
     const selectables = document.querySelectorAll('.selectable');
     const totalPriceElement = document.getElementById('totalPrice');
@@ -305,22 +297,19 @@
         totalPriceElement.textContent = total.toLocaleString();
     }
 
-    // 제출하기 버튼 클릭 이벤트
+    // 제출하기 버튼 로직
     submitBtn.addEventListener('click', async function() {
         const name = userNameInput.value.trim();
         
-        // 이름 검증
         if (!name) {
             alert('성함을 입력해주세요!');
             userNameInput.focus();
             return;
         }
 
-        // 선택 데이터 추출
         const selectedCells = document.querySelectorAll('.selectable.selected');
-        const totalAmount = calculateCurrentTotal();
-
-        // 각 카테고리별로 선택된 값 수집 (없으면 '선택 안함')
+        
+        // 시트 구조에 맞춤 (데이터가 선택 안되었으면 '선택 안함')
         const choices = {
             '근무시간': '선택 안함',
             '로또/주식': '선택 안함',
@@ -330,56 +319,46 @@
 
         selectedCells.forEach(cell => {
             const category = cell.parentElement.getAttribute('data-category');
-            // '주6일 (6시 퇴근) (1,000원)' 형태로 저장하도록 가공
-            choices[category] = `${cell.innerText.replace(/\n/g, ' ')} (${parseInt(cell.getAttribute('data-cost')).toLocaleString()}원)`;
+            choices[category] = cell.innerText.replace(/\n/g, ' '); 
         });
 
-        // 전송할 데이터 포맷
         const payload = {
             name: name,
             work: choices['근무시간'],
             lotto: choices['로또/주식'],
             health: choices['건강'],
-            partner: choices['배우자/파트너'],
-            total: totalAmount
+            partner: choices['배우자/파트너']
         };
 
-        // 초기 연동 전 URL 확인
         if (GOOGLE_APP_SCRIPT_URL === 'YOUR_GOOGLE_APP_SCRIPT_URL_HERE') {
-            alert(`[연동 테스트 안내]\n구글 스프레드시트 주소가 아직 설정되지 않았습니다.\n\n입력된 데이터 샘플:\n이름: ${payload.name}\n총액: ${payload.total}원\n근무: ${payload.work}\n로또: ${payload.lotto}`);
+            alert(`[안내] 웹 앱 URL 주소가 연동되지 않았습니다.\n\n전송될 데이터 샘플:\n이름: ${payload.name}\n근무: ${payload.work}\n로또: ${payload.lotto}\n건강: ${payload.health}\n파트너: ${payload.partner}`);
             return;
         }
 
-        // 버튼 비활성화 (중복 제출 방지)
         submitBtn.disabled = true;
         submitBtn.innerText = '제출 중...';
 
         try {
-            // 구글 앱스 크립트로 POST 요청 전송
-            const response = await fetch(GOOGLE_APP_SCRIPT_URL, {
+            await fetch(GOOGLE_APP_SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors', // CORS 정책 우회를 위해 no-cors 설정
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
 
             alert('성공적으로 제출되었습니다!');
-            // 폼 초기화
             userNameInput.value = '';
             document.querySelectorAll('.selectable.selected').forEach(cell => cell.classList.remove('selected'));
             updateTotal();
 
         } catch (error) {
             console.error('Error:', error);
-            alert('제출 중 오류가 발생했습니다. 다시 시도해 주세요.');
+            alert('제출 중 오류가 발생했습니다.');
         } finally {
             submitBtn.disabled = false;
             submitBtn.innerText = '제출하기';
         }
     });
 </script>
-
 </body>
 </html>
