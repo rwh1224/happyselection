@@ -32,17 +32,9 @@
             text-align: center;
         }
 
-        h1 {
-            color: #6a1b9a;
-            font-size: 26px;
-            margin-bottom: 10px;
-        }
+        h1 { color: #6a1b9a; font-size: 26px; margin-bottom: 10px; }
 
-        .desc {
-            font-size: 15px;
-            color: #757575;
-            margin-bottom: 25px;
-        }
+        .desc { font-size: 15px; color: #757575; margin-bottom: 25px; }
 
         .input-group {
             display: flex;
@@ -54,10 +46,7 @@
             margin: 0 auto 20px auto;
         }
 
-        label {
-            font-size: 16px;
-            font-weight: bold;
-        }
+        label { font-size: 16px; font-weight: bold; }
 
         input {
             width: 100%;
@@ -69,9 +58,7 @@
             outline: none;
         }
 
-        input:focus {
-            border-color: #9c27b0;
-        }
+        input:focus { border-color: #9c27b0; }
 
         .btn-match {
             background-color: #9c27b0;
@@ -87,14 +74,8 @@
             max-width: 400px;
         }
 
-        .btn-match:hover {
-            background-color: #7b1fa2;
-        }
-
-        .btn-match:disabled {
-            background-color: #bdc3c7;
-            cursor: not-allowed;
-        }
+        .btn-match:hover { background-color: #7b1fa2; }
+        .btn-match:disabled { background-color: #bdc3c7; cursor: not-allowed; }
 
         .result-box {
             margin-top: 30px;
@@ -115,27 +96,15 @@
             padding-bottom: 10px;
         }
 
-        .match-item {
-            margin: 8px 0;
+        .gemini-result {
             font-size: 15px;
-        }
-
-        .match-highlight {
-            color: #2e7d32;
-            font-weight: bold;
-        }
-
-        .match-name-display {
-            font-size: 42px;
-            font-weight: bold;
-            color: #d32f2f;
-            text-align: center;
-            margin: 15px 0;
+            line-height: 1.8;
+            color: #4e342e;
+            white-space: pre-wrap;
+            background: #fff;
             padding: 15px;
-            background-color: #fff;
-            border-radius: 10px;
-            border: 2px solid #e1bee7;
-            letter-spacing: 4px;
+            border-radius: 8px;
+            margin-top: 10px;
         }
 
         .btn-back {
@@ -153,17 +122,17 @@
 
 <div class="container">
     <h1>🔮 내 소울메이트 찾기</h1>
-    <div class="desc">구글 스프레드시트의 데이터를 분석하여<br>나와 가장 선택이 유사한 사람을 찾아옵니다.</div>
+    <div class="desc">Gemini AI가 스프레드시트 데이터를 분석하여<br>나와 가장 닮은 사람을 찾아드립니다.</div>
 
     <div class="input-group">
         <label for="searchName">내 이름 입력</label>
         <input type="text" id="searchName" placeholder="방금 제출한 이름을 입력하세요" required>
     </div>
 
-    <button type="button" class="btn-match" id="matchBtn">닮은 사람 찾기</button>
+    <button type="button" class="btn-match" id="matchBtn">🔍 닮은 사람 찾기</button>
 
     <div class="result-box" id="resultBox">
-        <h3>💡 분석 결과</h3>
+        <h3>💡 Gemini 분석 결과</h3>
         <p id="resultSummary" style="font-size: 16px; font-weight: bold; text-align: center;"></p>
         <div id="matchDetails"></div>
     </div>
@@ -172,7 +141,6 @@
 </div>
 
 <script>
-    // ✅ index.html과 동일한 URL로 통일
     const GOOGLE_APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzkZlOdXdX2-ckhaxhCz-9Ji0OJZ0rJ8rjkdb6ryTIWLTJdQabcKgFD27ENADzNNGQp/exec';
 
     const matchBtn = document.getElementById('matchBtn');
@@ -191,77 +159,33 @@
         }
 
         matchBtn.disabled = true;
-        matchBtn.innerText = '스프레드시트 분석 중...';
+        matchBtn.innerText = '🤖 Gemini 분석 중...';
         resultBox.style.display = 'none';
 
         try {
-            // ✅ 변수를 올바르게 사용 (따옴표 없이 변수명만)
-            const response = await fetch(GOOGLE_APP_SCRIPT_URL);
+            // Apps Script doGet에 action=analyze&name=이름 으로 GET 요청
+            // Apps Script 내부에서 Gemini 호출 후 결과 반환 → CORS 문제 없음
+            const response = await fetch(
+                `${GOOGLE_APP_SCRIPT_URL}?action=analyze&name=${encodeURIComponent(myName)}`,
+                { redirect: 'follow' }
+            );
             const resData = await response.json();
 
             if (resData.result !== 'success') {
-                alert('데이터를 가져오는데 실패했습니다.');
+                alert('분석에 실패했습니다: ' + (resData.message || ''));
                 return;
             }
 
-            const allUsers = resData.data;
-
-            // 내 데이터 찾기 (가장 최근 것 기준)
-            const myData = allUsers.slice().reverse().find(user => user.name === myName);
-
-            if (!myData) {
-                alert(`'${myName}' 이름으로 제출된 기록을 찾을 수 없습니다.\n먼저 첫 페이지에서 선택을 완료하고 제출해 주세요!`);
-                return;
-            }
-
-            // 나와 가장 닮은 사람 계산
-            let bestMatchUser = null;
-            let maxScore = -1;
-            let bestMatchDetails = [];
-
-            allUsers.forEach(otherUser => {
-                // 자기 자신 제외
-                if (otherUser.timestamp === myData.timestamp && otherUser.name === myData.name) return;
-
-                let currentScore = 0;
-                let matches = [];
-
-                if (otherUser.work === myData.work)       { currentScore++; matches.push(`근무시간 (${myData.work})`); }
-                if (otherUser.lotto === myData.lotto)     { currentScore++; matches.push(`로또/주식 (${myData.lotto})`); }
-                if (otherUser.health === myData.health)   { currentScore++; matches.push(`건강 (${myData.health})`); }
-                if (otherUser.partner === myData.partner) { currentScore++; matches.push(`배우자/파트너 (${myData.partner})`); }
-
-                if (currentScore > maxScore) {
-                    maxScore = currentScore;
-                    bestMatchUser = otherUser;
-                    bestMatchDetails = matches;
-                }
-            });
-
-            // 결과 표시
             resultBox.style.display = 'block';
-            if (bestMatchUser && maxScore > 0) {
-                resultSummary.innerHTML = `🎉 <span style="color:#4a148c;">${myData.name}</span>님과 가장 닮은 사람은`;
-
-                let html = `<div class="match-name-display">👤 ${bestMatchUser.name}</div>`;
-                html += `<p style="text-align:center; font-size:14px; color:#666;">네 가지 가치관 중 <b>${maxScore}개</b>의 선택이 완벽히 일치합니다.</p><br>`;
-                html += `<b>🤝 일치하는 항목:</b><br>`;
-                bestMatchDetails.forEach(item => {
-                    html += `<div class="match-item">✅ <span class="match-highlight">${item}</span> 항목이 서로 일치합니다.</div>`;
-                });
-
-                matchDetails.innerHTML = html;
-            } else {
-                resultSummary.innerHTML = `🤔 아쉽게도 아직 닮은 사람을 찾지 못했습니다.`;
-                matchDetails.innerHTML = `<p style="text-align:center; color:#666;">스프레드시트에 다른 사람의 데이터가 아직 없거나,<br>선택지가 겹치는 사람이 한 명도 없습니다. 더 많은 사람이 참여하면 결과가 나타납니다!</p>`;
-            }
+            resultSummary.innerHTML = `🎉 <span style="color:#4a148c;">${myName}</span>님의 소울메이트는...`;
+            matchDetails.innerHTML = `<div class="gemini-result">${resData.analysis}</div>`;
 
         } catch (error) {
             console.error('Error:', error);
             alert('분석 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
         } finally {
             matchBtn.disabled = false;
-            matchBtn.innerText = '닮은 사람 찾기';
+            matchBtn.innerText = '🔍 닮은 사람 찾기';
         }
     });
 </script>
